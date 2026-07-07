@@ -1,0 +1,7 @@
+server_bin
+client_bin
+
+*.o
+
+*.swp
+.DS_Store

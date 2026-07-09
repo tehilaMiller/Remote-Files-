@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include "socket_handler.h"
 #include "parser.h"
+#include "validator.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
@@ -57,11 +58,18 @@ int main(void) {
             send(client_fd, response, strlen(response), 0);
             continue;
         }
-        printf("Parsed -> command: '%s', filename: '%s', content: '%s'\n",
-                parsed.command, parsed.filename, parsed.content);
-
+        char error_msg[MAX_ERROR_MSG_LEN];
+        if (!validate_command(&parsed, error_msg)) {
+            char response[BUFFER_SIZE];
+            snprintf(response, BUFFER_SIZE, "ERROR|%s", error_msg);
+            send(client_fd, response, strlen(response), 0);
+            continue;
+        }
+ 
+        printf("Validated -> command: '%s', filename: '%s', content: '%s'\n",
+               parsed.command, parsed.filename, parsed.content);
         char response[BUFFER_SIZE];
-        snprintf(response, BUFFER_SIZE,"OK|Parsed command: %s", parsed.command);
+        snprintf(response, BUFFER_SIZE,"OK|Valid command: %s", parsed.command);
 
         if (send(client_fd, response, strlen(response), 0) < 0) {
             perror("send failed");

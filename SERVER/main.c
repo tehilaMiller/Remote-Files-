@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include "socket_handler.h"
+#include "parser.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
@@ -50,8 +51,17 @@ int main(void) {
             break;
         }
 
+        ParsedCommand parsed;
+        if(!parse_command(buffer, &parsed)) {
+            const char *response = "ERROR|Invalid command format.";
+            send(client_fd, response, strlen(response), 0);
+            continue;
+        }
+        printf("Parsed -> command: '%s', filename: '%s', content: '%s'\n",
+                parsed.command, parsed.filename, parsed.content);
+
         char response[BUFFER_SIZE];
-        snprintf(response, BUFFER_SIZE, "Server received: %s", buffer);
+        snprintf(response, BUFFER_SIZE,"OK|Parsed command: %s", parsed.command);
 
         if (send(client_fd, response, strlen(response), 0) < 0) {
             perror("send failed");

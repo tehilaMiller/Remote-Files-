@@ -66,11 +66,8 @@ int main(void) {
             }
             content[strcspn(content, "\n")] = '\0';
         }
-        if (strcmp(command, "WRITE") == 0 || strcmp(command, "APPEND") == 0) {
-            snprintf(message, sizeof(message), "%s|%s|%s", command, filename, content);
-        } else {
-            snprintf(message, sizeof(message), "%s|%s", command, filename);
-        }
+        snprintf(message, sizeof(message), "%s|%zu|%s|%zu|%s",
+                 command, strlen(filename), filename, strlen(content), content);
 
         if (send(sock_fd, message, strlen(message), 0) < 0) {
            perror("send failed");

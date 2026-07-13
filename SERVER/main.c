@@ -16,20 +16,20 @@ int main(void) {
 
     int server_fd = create_server_socket(PORT);
     if (server_fd < 0) {
-        fprintf(stderr, "שגיאה: לא ניתן היה ליצור את סוקט השרת\n");
+        fprintf(stderr, "Error: The server socket could not be created.\n");
         return 1;
     }
 
-    printf("השרת פועל ומאזין על פורט %d...\n", PORT);
+    printf("The server is running and listening on port %d...\n", PORT);
 
     int client_fd = accept_client(server_fd);
     if (client_fd < 0) {
-        fprintf(stderr, "שגיאה: קבלת הלקוח נכשלה\n");
+        fprintf(stderr, "Error: Failed to accept client connection.\n");
         close(server_fd);
         return 1;
     }
 
-    printf("החיבור עם הלקוח בוצע בהצלחה!\n");
+    printf("The connection with the client was successful!\n");
 
     char buffer[BUFFER_SIZE];
 
@@ -42,7 +42,7 @@ int main(void) {
             break;
         }
         if (bytes_received == 0) {
-            printf("הלקוח סגר את החיבור\n");
+            printf("The client closed the connection\n");
             break;
         }
 
@@ -59,7 +59,7 @@ int main(void) {
         if (strcmp(buffer, "QUIT") == 0) {
             const char *response = "Goodbye! Closing connection.";
             send(client_fd, response, strlen(response), 0);
-            printf("הלקוח ביקש להתנתק (QUIT)\n");
+            printf("The customer requested to disconnect.(QUIT)\n");
             break;
         }
 
@@ -84,7 +84,7 @@ int main(void) {
 
     close(client_fd);
     close(server_fd);
-    printf("השרת נסגר\n");
+    printf("The server is shutting down.\n");
 
     return 0;
 }

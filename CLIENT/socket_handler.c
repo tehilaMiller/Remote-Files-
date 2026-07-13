@@ -22,7 +22,7 @@ int create_client_socket(const char *server_ip, int port) {
     server_addr.sin_port = htons(port); 
 
     if (inet_pton(AF_INET, server_ip, &server_addr.sin_addr) <= 0) {
-        fprintf(stderr, "כתובת IP לא תקינה: %s\n", server_ip);
+        fprintf(stderr, "Invalid IP address: %s\n", server_ip);
         close(client_fd);
         return -1;
     }

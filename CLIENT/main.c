@@ -12,23 +12,23 @@
 int main(void) {
     int sock_fd = create_client_socket(SERVER_IP, SERVER_PORT);
     if (sock_fd < 0) {
-        fprintf(stderr, "שגיאה: לא ניתן היה להתחבר לשרת\n");
+        fprintf(stderr, "Error: Could not connect to server.\n");
         return 1;
     }
 
-    printf("החיבור לשרת בוצע בהצלחה!\n");
+    printf("The connection to the server was successful!\n");
 
-    char message[BUFFER_SIZE * 3];
+    char message[BUFFER_SIZE * 4];
     char command[BUFFER_SIZE];
     char filename[BUFFER_SIZE];
     char content[BUFFER_SIZE];
     char buffer[BUFFER_SIZE];
 
     while (1){
-        printf("הזן פקודה (CREATE,WRITE, APPEND, READ, DELETE, QUIT): ");
+        printf("Enter command (CREATE,WRITE, APPEND, READ, DELETE, QUIT): ");
         fflush(stdout);
         if (fgets(command, BUFFER_SIZE, stdin) == NULL) {
-            printf("שגיאה בקריאת קלט, מתנתק...\n");
+            printf("Error reading input, disconnecting...\n");
             break;
         }
         command[strcspn(command, "\n")] = '\0';
@@ -36,32 +36,32 @@ int main(void) {
             continue;
         }
             if (!is_known_command(command)) {
-            printf("פקודה לא מוכרת. נסי שוב.\n");
+            printf("Unknown command. Please try again.\n");
             continue;
         }
         if (strcmp(command, "QUIT") == 0) {
             send(sock_fd, command, strlen(command), 0);
             break;
         }
-        printf("הזן שם קובץ: ");
+        printf("Enter filename: ");
         fflush(stdout);
         if (fgets(filename, BUFFER_SIZE, stdin) == NULL) {
-            printf("שגיאה בקריאת קלט, מתנתק...\n");
+            printf("Error reading input, disconnecting...\n");
             break;
         }
         filename[strcspn(filename, "\n")] = '\0';
 
         if (!is_valid_filename(filename)) {
-            printf("שם קובץ לא חוקי (ריק, מתחיל ב-'/', או מכיל '..'). נסי שוב.\n");
+            printf("Invalid filename (empty, starts with '/', or contains '..'). Please try again.\n");
             continue;
         }
         content[0] = '\0';
 
         if(strcmp(command, "WRITE") == 0 || strcmp(command, "APPEND") == 0) {
-            printf("הזן תוכן : ");
+            printf("Enter content: ");
             fflush(stdout);
             if (fgets(content, BUFFER_SIZE, stdin) == NULL) {
-                printf("שגיאה בקריאת קלט, מתנתק...\n");
+                printf("Error reading input, disconnecting...\n");
                 break;
             }
             content[strcspn(content, "\n")] = '\0';
@@ -80,13 +80,13 @@ int main(void) {
             break;
         }
         if (bytes_received == 0) {
-            printf("השרת סגר את החיבור\n");
+            printf("The server closed the connection.\n");
             break;
         }
         buffer[bytes_received] = '\0';
         printf("Server response: %s\n", buffer);
     }
     close(sock_fd);
-    printf("החיבור נסגר\n");
+    printf("The connection is closed.\n");
     return 0;
 }

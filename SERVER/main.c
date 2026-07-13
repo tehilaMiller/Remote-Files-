@@ -5,11 +5,15 @@
 #include "socket_handler.h"
 #include "parser.h"
 #include "validator.h"
+#include "dispatcher.h"
+#include "file_handler.h"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
 int main(void) {
+    ensure_working_dir_exists();
+
     int server_fd = create_server_socket(PORT);
     if (server_fd < 0) {
         fprintf(stderr, "שגיאה: לא ניתן היה ליצור את סוקט השרת\n");
@@ -45,6 +49,13 @@ int main(void) {
         buffer[bytes_received] = '\0';
         printf("Received from client: %s\n", buffer);
 
+        
+        ParsedCommand parsed;
+        if(!parse_command(buffer, &parsed)) {
+            const char *response = "ERROR|Invalid command format.";
+            send(client_fd, response, strlen(response), 0);
+            continue;
+        }
         if (strcmp(buffer, "QUIT") == 0) {
             const char *response = "Goodbye! Closing connection.";
             send(client_fd, response, strlen(response), 0);
@@ -52,12 +63,6 @@ int main(void) {
             break;
         }
 
-        ParsedCommand parsed;
-        if(!parse_command(buffer, &parsed)) {
-            const char *response = "ERROR|Invalid command format.";
-            send(client_fd, response, strlen(response), 0);
-            continue;
-        }
         char error_msg[MAX_ERROR_MSG_LEN];
         if (!validate_command(&parsed, error_msg)) {
             char response[BUFFER_SIZE];
@@ -66,10 +71,10 @@ int main(void) {
             continue;
         }
  
-        printf("Validated -> command: '%s', filename: '%s', content: '%s'\n",
-               parsed.command, parsed.filename, parsed.content);
-        char response[BUFFER_SIZE];
-        snprintf(response, BUFFER_SIZE,"OK|Valid command: %s", parsed.command);
+
+        char response[MAX_RESPONSE_LEN];
+        dispatch_command(&parsed, response);
+
 
         if (send(client_fd, response, strlen(response), 0) < 0) {
             perror("send failed");
